@@ -2,7 +2,8 @@
 using namespace std;
 
 int cross(int line1[], int line2[]);
-int inArea(int n1, int n2, int val);
+void sortLine(int line[]);
+void swapInt(int *v1, int *v2);
 
 int main(){
     int t;
@@ -34,7 +35,7 @@ int main(){
 int cross(int line1[], int line2[]){
     if(line1[0] == line1[2]){
         int _1x = line1[0];
-        int _2y = line1[1];
+        int _2y = line2[1];
         for(int _1y=line1[1]; _1y<=line1[3]; _1y++)
             for(int _2x=line2[0]; _2x<=line2[2]; _2x++)
                 if(_1x == _2x && _1y == _2y){
@@ -63,9 +64,9 @@ int cross(int line1[], int line2[]){
 
 void sortLine(int line[]){
     if(line[0] == line[2] && line[1] > line[3])
-        swapInt(line[1], line[3]);
+        swapInt(&line[1], &line[3]);
     if(line[1] == line[3] && line[0] > line[2])
-        swapInt(line[0], line[2]);
+        swapInt(&line[0], &line[2]);
 }
 
 void swapInt(int *v1, int *v2){
