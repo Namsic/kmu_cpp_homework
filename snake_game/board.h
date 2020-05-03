@@ -1,14 +1,21 @@
 class Board{
 private:
-    int width;
-    int height;
+    int width, height;
     int **field;
-    float tick;
+    int head_x, head_y;
+    int length = 3;
+    int direction = 0;
+
+    void reduceBody();
+    void growUpBody();
+
 
 public:
-    Board(int w=21, int=21);
+    Board(int = 0);
     int getWidth();
     int getHeight();
     int getField(int, int);
-    bool changeField(int, int, int);
+
+    void setDirection(int);
+    bool moveForward();
 };
