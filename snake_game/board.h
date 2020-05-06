@@ -1,13 +1,17 @@
 class Board{
 private:
-    int width, height;
+    int width = 21, height = 21;
     int **field;
-    int head_x, head_y;
+    int head_row = 10, head_col = 10;
+    int direction = 1;
     int length = 3;
-    int direction = 0;
+    int itemProbability[3] = {5, 5, 5};
+    int itemMaximum[3] = {3, 3, 1};
+    int itemLife[3] = {20, 20, 50};
 
-    void reduceBody();
-    void growUpBody();
+    void resizeBody(int);
+    bool moveForward();
+    void itemGenerate();
 
 
 public:
@@ -16,6 +20,6 @@ public:
     int getHeight();
     int getField(int, int);
 
-    void setDirection(int);
-    bool moveForward();
+    bool setDirection(int);
+    bool step();
 };

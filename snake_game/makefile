@@ -1,5 +1,5 @@
 CC=g++
-TARGET=snakeApp.exe
+TARGET=snakeApp.out
 OBJS=main.o board.o
 
 all: $(TARGET)
