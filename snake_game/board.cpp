@@ -5,39 +5,14 @@
 
 
 // Constructor
-Board::Board(int stage){
+Board::Board(){
     srand((unsigned int)time(NULL));
-    /* Init basic information
-     *
-     * Map:
-     *   width, height (21, 21)
-     *
-     * Snake:
-     *   head_row, head_col (10, 10)
-     *   direction(1:left), length(3)
-     *
-     * Item: (0: growth item, 1: poison item, 2: portal)
-     *   itemProbability(%)
-     *     [0] (5)
-     *     [1] (5)
-     *     [2] (5)
-     *   itemMaximum
-     *     [0] (3)
-     *     [1] (3)
-     *     [2] (1)
-     *   itemLife
-     *     [0] (20)
-     *     [1] (20)
-     *     [2] (50)
-     */
-    switch(stage){
-        // case 0: use default value
-        case 1:
-            width = 30; height = 25;
-            head_row = 15; head_col = 12;
-            direction = 0;
-        break;
-    }
+    // Default Setting
+    initMap(21, 21);
+    initSnake(10, 10, 1, 3);
+    initItemProbability(5, 5, 5);
+    initItemMaximum(3, 3, 1);
+    initItemLife(20, 20, 20);
 
     // Generate empty field
     field = new int*[height];
@@ -49,16 +24,36 @@ Board::Board(int stage){
             field[r][c] = 1 : field[r][c] = 0;
     field[0][0] = 2; field[height-1][width-1] = 2;
     field[0][width-1] = 2; field[height-1][0] = 2;
+}
 
-    // Generate obstacle
-    switch(stage){
-        case 1:
-            for(int r=8; r<16; r++)
-                field[r][10] = 1;
-        break;
-    }
+void Board::initMap(int w, int h){
+    width = w;
+    height = h;
+}
 
-    field[head_row][head_col] = 3;
+void Board::initSnake(int r, int c, int d, int l){
+    head_row = r;
+    head_col = c;
+    direction = d;
+    length = l;
+}
+
+void Board::initItemProbability(int growth, int poison, int portal){
+    itemProbability[0] = growth;
+    itemProbability[1] = poison;
+    itemProbability[2] = portal;
+}
+
+void Board::initItemMaximum(int growth, int poison, int portal){
+    itemMaximum[0] = growth;
+    itemMaximum[1] = poison;
+    itemMaximum[2] = portal;
+}
+
+void Board::initItemLife(int growth, int poison, int portal){
+    itemLife[0] = growth;
+    itemLife[1] = poison;
+    itemLife[2] = portal;
 }
 
 int Board::getWidth(){

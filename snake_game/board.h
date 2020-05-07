@@ -1,13 +1,13 @@
 class Board{
 private:
-    int width = 21, height = 21;
+    int width, height;
     int **field;
-    int head_row = 10, head_col = 10;
-    int direction = 1;
-    int length = 3;
-    int itemProbability[3] = {5, 5, 5};
-    int itemMaximum[3] = {3, 3, 1};
-    int itemLife[3] = {20, 20, 50};
+    int head_row, head_col;
+    int direction;
+    int length;
+    int itemProbability[3];
+    int itemMaximum[3];
+    int itemLife[3];
 
     void resizeBody(int);
     bool moveForward();
@@ -15,7 +15,14 @@ private:
 
 
 public:
-    Board(int = 0);
+    Board();
+
+    void initMap(int, int);
+    void initSnake(int, int, int, int);
+    void initItemProbability(int, int, int);
+    void initItemMaximum(int, int, int);
+    void initItemLife(int, int, int);
+
     int getWidth();
     int getHeight();
     int getField(int, int);
