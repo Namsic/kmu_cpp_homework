@@ -1,5 +1,5 @@
 #include<time.h>
-#include "ui.h"
+#include "snake.h"
 
 UserInterface::UserInterface(){
     initscr();

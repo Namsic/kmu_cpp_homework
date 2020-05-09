@@ -11,6 +11,6 @@ clean:
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $(OBJS) -lncurses
 
-main.o: board.h ui.h main.cpp
-ui.o: board.h ui.h ui.cpp
-board.o: board.h board.cpp
+main.o: snake.h main.cpp
+ui.o: snake.h ui.cpp
+board.o: snake.h board.cpp
