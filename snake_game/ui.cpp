@@ -1,5 +1,8 @@
 #include<time.h>
+#include<string>
 #include "snake.h"
+
+using namespace std;
 
 UserInterface::UserInterface(){
     initscr();
@@ -15,22 +18,99 @@ UserInterface::UserInterface(){
     init_pair(20, COLOR_BLACK, COLOR_GREEN);
     init_pair(30, COLOR_BLACK, COLOR_RED);
     init_pair(40, COLOR_BLACK, COLOR_MAGENTA);
+    bkgd(COLOR_PAIR(1));
 
-    boardWindow = newwin(40, 40*2, 1, 2);
+    boardWindow = newwin(21, 21*2+1, 1, 2);
+    scoreWindow   = newwin(6, 17, 1, 2);
+    missionWindow = newwin(5, 17, 1, 2);
+    gateWindow    = newwin(5, 17, 1, 2);
+
+    wbkgd(boardWindow, COLOR_PAIR(1));
+    wbkgd(scoreWindow, COLOR_PAIR(2));
+    wbkgd(missionWindow, COLOR_PAIR(2));
+    wbkgd(gateWindow, COLOR_PAIR(2));
+
+    wattron(scoreWindow, COLOR_PAIR(2));
+    wattron(missionWindow, COLOR_PAIR(2));
+    wattron(gateWindow, COLOR_PAIR(2));
 }
 
 UserInterface::~UserInterface(){
     delwin(boardWindow);
+    delwin(scoreWindow);
+    delwin(missionWindow);
     endwin();
 }
 
-void UserInterface::play(Board board, double tick){
+
+bool UserInterface::play(Board board, double tick){
     tick = tick * CLOCKS_PER_SEC;
+    timeout(0);
     int width=board.getWidth();
     int height=board.getHeight();
+    wresize(boardWindow, height, width*2+1);
+    mvwin(scoreWindow,   1, width*2 + 6);
+    mvwin(missionWindow, 8, width*2 + 6);
+    mvwin(gateWindow,   14, width*2 + 6);
+
+    erase();
     refresh();
-    bool running = true;
-    while(running){
+    while(true){
+        // Renew score_window
+        wmove(scoreWindow, 0, 0);
+        wprintw(scoreWindow, " * Score Board *\n  B: ");
+        wprintw(scoreWindow, to_string(board.scoreLength()).c_str());
+        wprintw(scoreWindow, " / ");
+        wprintw(scoreWindow, to_string(board.scoreMaxLength()).c_str());
+        wprintw(scoreWindow, "  \n +: ");
+        wprintw(scoreWindow, to_string(board.scoreGrowth()).c_str());
+        wprintw(scoreWindow, "  \n -: ");
+        wprintw(scoreWindow, to_string(board.scorePoison()).c_str());
+        wprintw(scoreWindow, "  \n G: ");
+        wprintw(scoreWindow, to_string(board.scoreGate()).c_str());
+        wprintw(scoreWindow, "  \n E: ");
+        wprintw(scoreWindow, to_string(board.getElapse()).c_str());
+        wprintw(scoreWindow, "  ");
+        wrefresh(scoreWindow);
+
+        // Renew missoin_window
+        wmove(missionWindow, 0, 0);
+        wprintw(missionWindow, " *   Mission   *\n B: ");
+        wprintw(missionWindow, to_string(board.missionMaxLength()).c_str());
+        wprintw(missionWindow, " (");
+        if(board.successMaxLength()) wprintw(missionWindow, "v)\n +: ");
+        else wprintw(missionWindow, " )\n +: ");
+        wprintw(missionWindow, to_string(board.missionGrowth()).c_str());
+        wprintw(missionWindow, " (");
+        if(board.successGrowth()) wprintw(missionWindow, "v)\n -: ");
+        else wprintw(missionWindow, " )\n -: ");
+        wprintw(missionWindow, to_string(board.missionPoison()).c_str());
+        wprintw(missionWindow, " (");
+        if(board.successPoison()) wprintw(missionWindow, "v)\n G: ");
+        else wprintw(missionWindow, " )\n G: ");
+        wprintw(missionWindow, to_string(board.missionGate()).c_str());
+        wprintw(missionWindow, " (");
+        if(board.successGate()) wprintw(missionWindow, "v)");
+        else wprintw(missionWindow, " )");
+        wrefresh(missionWindow);
+
+        // Renew gate_window
+        wmove(gateWindow, 0, 0);
+        wprintw(gateWindow, " *     Gate    *\n E: ");
+        wprintw(gateWindow, to_string(board.gateOpenElapse()).c_str());
+        wprintw(gateWindow, " (");
+        if(board.getElapse() >= board.gateOpenElapse())
+            wprintw(gateWindow, "v)\n B: ");
+        else wprintw(gateWindow, " )\n B: ");
+        wprintw(gateWindow, to_string(board.gateOpenLength()).c_str());
+        wprintw(gateWindow, " (");
+        if(board.scoreMaxLength() >= board.gateOpenLength())
+            wprintw(gateWindow, "v)");
+        else wprintw(gateWindow, " )");
+        wrefresh(gateWindow);
+
+        // Renew board_window
+        wmove(boardWindow, 0, 0);
         for(int r=0; r<height; r++){
             for(int c=0; c<width; c++){
                 if(board.getField(r,c) > 100)
@@ -41,17 +121,12 @@ void UserInterface::play(Board board, double tick){
             }
             wprintw(boardWindow, "\n");
         }
-        wmove(boardWindow, 0, 0);
         wrefresh(boardWindow);
 
+        // Input keyboard
         int timeStamp = clock();
         while(clock() - timeStamp < tick){
-            timeout(0);
-            int c = getch();
-            switch(c){
-                case 'q':
-                    running = false;
-                break;
+            switch(getch()){
                 case KEY_UP:
                     board.setDirection(0);
                 break;
@@ -66,7 +141,44 @@ void UserInterface::play(Board board, double tick){
                 break;
             }
         }
-        board.step();
+        
+        // Check Complete or Fail
+        if(!board.step()){
+            wattron(boardWindow, COLOR_PAIR(30));
+            wmove(boardWindow, height/2-2, width - 9);
+            wprintw(boardWindow, "*----------------*");
+            wmove(boardWindow, height/2-1, width - 9);
+            wprintw(boardWindow, "*-- Game  Over --*");
+            wmove(boardWindow, height/2, width - 9);
+            wprintw(boardWindow, "*----------------*");
+            wmove(boardWindow, height/2+1, width - 9);
+            wprintw(boardWindow, "                  ");
+            wmove(boardWindow, height/2+2, width - 9);
+            wprintw(boardWindow, "Press 'q' to close");
+            wrefresh(boardWindow);
+            timeout(-1);
+            while(getch()!='q');
+            return false;
+        }
+        if( board.successMaxLength() && board.successGrowth() &&
+            board.successPoison() && board.successGate() )
+        {
+            wattron(boardWindow, COLOR_PAIR(20));
+            wmove(boardWindow, height/2-2, width - 9);
+            wprintw(boardWindow, "*-------------------*");
+            wmove(boardWindow, height/2-1, width - 9);
+            wprintw(boardWindow, "*------ Clear ------*");
+            wmove(boardWindow, height/2, width - 9);
+            wprintw(boardWindow, "*-------------------*");
+            wmove(boardWindow, height/2+1, width - 9);
+            wprintw(boardWindow, "                     ");
+            wmove(boardWindow, height/2+2, width - 9);
+            wprintw(boardWindow, "Press 'c' to continue");
+            wrefresh(boardWindow);
+            timeout(-1);
+            while(getch()!='c');
+            return true;
+        }
     }
 }
 
