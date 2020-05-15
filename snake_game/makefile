@@ -1,6 +1,6 @@
 CC=g++
 TARGET=snakeApp.out
-OBJS=main.o ui.o board.o
+OBJS=main.o ui.o SnakeGame.o
 
 all: $(TARGET)
 
@@ -13,4 +13,4 @@ $(TARGET): $(OBJS)
 
 main.o: snake.h main.cpp
 ui.o: snake.h ui.cpp
-board.o: snake.h board.cpp
+SnakeGame.o: snake.h SnakeGame.cpp
