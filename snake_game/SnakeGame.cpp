@@ -6,12 +6,13 @@
 SnakeGame::SnakeGame(){
     srand((unsigned int)time(NULL));
     
-    // Set default
+    // Default setting
     initMap(21, 21);
     initSnake(height/2, width/2, 1, 3);
     initGrowth(10, 3, 30);
     initPoison(10, 3, 30);
     initGate(10, 2, 30);
+    initMission(-1, -1, -1, -1);
 }
 
 // Initialize map
@@ -55,6 +56,8 @@ void SnakeGame::initSnake(int r, int c, int d, int l){
     snake.col = c;
     snake.dir = d;
     snake.len = l;
+
+    map[snake.row][snake.col].type = 3;
 }
 
 // Initialize growth item
@@ -76,6 +79,22 @@ void SnakeGame::initGate(int p, int m, int d){
     gate.pro = p;
     gate.max = m;
     gate.dur = d;
+}
+
+// Initialize mission
+void SnakeGame::initMission(int l, int g, int p, int gate){
+    if(l < 0) l = rand() % 5 + 4;
+    if(g < 0) g = rand() % 5 + 1;
+    if(p < 0) p = rand() % 5 + 1;
+    if(gate < 0) gate = rand() % 5 + 1;
+    mission.mission_length = l;
+    mission.mission_growth = g;
+    mission.mission_poison = p;
+    mission.mission_gate = gate;
+    mission.max_length = 0;
+    mission.get_growth = 0;
+    mission.get_poison = 0;
+    mission.get_gate = 0;
 }
 
 // Proceed a tick
@@ -196,29 +215,29 @@ void SnakeGame::resizeSnake(int a){
 
 // Generate new item & gate
 void SnakeGame::generateItem(){
-    int itemCount[] = {0, 0, 0};  // {growth, poison, gate}
-    int emptyCount = 0, wallCount = 0;
+    int item_cnt[] = {0, 0, 0};  // {growth, poison, gate}
+    int empty_cnt = 0, wall_cnt = 0;
 
     // Count each MapElement_type
     for(int r=0; r<height; r++)
         for(int c=0; c<width; c++){
             switch(map[r][c].type){
             case 0:
-                emptyCount++;
+                empty_cnt++;
                 break;
             case 1:
-                wallCount++;
+                wall_cnt++;
                 break;
             case 5:
             case 6:
             case 7:
-                itemCount[map[r][c].type-5]++;
+                item_cnt[map[r][c].type-5]++;
             }
         }
 
     // Generate growth item
-    if(itemCount[0] < growth.max && rand()%100 <= growth.pro){
-        int index = rand()%emptyCount;
+    if(item_cnt[0] < growth.max && rand()%100 <= growth.pro){
+        int index = rand()%empty_cnt;
         int n = 0;
         for(int r=0; r<height; r++)
             for(int c=0; c<width; c++)
@@ -229,8 +248,8 @@ void SnakeGame::generateItem(){
     }
 
     // Generate poison item
-    if(itemCount[1] < poison.max && rand()%100 <= poison.pro){
-        int index = rand()%emptyCount;
+    if(item_cnt[1] < poison.max && rand()%100 <= poison.pro){
+        int index = rand()%empty_cnt;
         int n = 0;
         for(int r=0; r<height; r++)
             for(int c=0; c<width; c++)
@@ -241,12 +260,12 @@ void SnakeGame::generateItem(){
     }
 
     // Generate gate
-    if(itemCount[2] < gate.max && rand()%100 <= gate.pro){
+    if(item_cnt[2] < gate.max && rand()%100 <= gate.pro){
         int index1, index2;
         int r1, c1, r2, c2;
 
-        index1 = rand()%wallCount;
-        do{ index2 = rand()%wallCount;
+        index1 = rand()%wall_cnt;
+        do{ index2 = rand()%wall_cnt;
         }while(index1 == index2);
 
         int n = 0;

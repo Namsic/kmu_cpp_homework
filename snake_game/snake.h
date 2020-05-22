@@ -13,6 +13,7 @@ public:
     void initGrowth(int probability, int maximum, int duration);
     void initPoison(int probability, int maximum, int duration);
     void initGate(int probability, int maximum, int duration);
+    void initMission(int max_length, int growth, int poison, int gate);
 
 private:
     struct MapElement{
@@ -53,10 +54,21 @@ private:
         int max;  // Maximum existence
         int dur;  // Duration(tick)
     };
+    struct Mission{
+        mission_length;
+        mission_growth;
+        mission_poison;
+        mission_gate;
+        max_length;
+        get_growth;
+        get_poison;
+        get_gate;
+    };
     int height, width;
     MapElement **map;
     Snake snake;
     Item growth, poison, gate;
+    Mission mission;
 
     // Control snake
     bool setNextHead();
