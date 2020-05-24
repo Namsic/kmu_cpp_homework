@@ -2,27 +2,17 @@
 #include<ctime>
 #include"snake.h"
 
-// Default constructor
-SnakeGame::SnakeGame(){
-    srand((unsigned int)time(NULL));
-    
-    // Default setting
-    initMap(21, 21);
-    initSnake(height/2, width/2, 1, 3);
-    initGrowth(10, 3, 30);
-    initPoison(10, 3, 30);
-    initGate(10, 2, 30);
-    initMission(-1, -1, -1, -1);
+// Constructor
+SnakeGame::SnakeGame(): height(21), width(21){
+    initGame(height, width);
+}
+SnakeGame::SnakeGame(int h, int w): height(h), width(w){
+    initGame(height, width);
 }
 
-// Initialize map
-void SnakeGame::initMap(int h, int w){
-    // Use random size
-    if(h < 0) h = rand() % 10 + 21;
-    if(w < 0) w = rand() % 10 + 21;
-
-    height = h;
-    width = w;
+// Initialize basic setting
+void SnakeGame::initGame(int h, int w){
+    srand((unsigned int)time(NULL));
 
     // Generate empty map
     map = new MapElement*[height];
@@ -30,19 +20,32 @@ void SnakeGame::initMap(int h, int w){
         map[i] = new MapElement[width];
 
     // Generate basic wall
-    map[0][0].type = 2;
-    map[0][width-1].type = 2;
-    map[height-1][0].type = 2;
-    map[height-1][width-1].type = 2;
+    map[0][0].type = IMMUNE_WALL;
+    map[0][width-1].type = IMMUNE_WALL;
+    map[height-1][0].type = IMMUNE_WALL;
+    map[height-1][width-1].type = IMMUNE_WALL;
 
     for(int i=1; i<height-1; i++){
-        map[i][0].type = 1;
-        map[i][width-1].type = 1;
+        map[i][0].type = NORMAL_WALL;
+        map[i][width-1].type = NORMAL_WALL;
     }
     for(int i=1; i<width-1; i++){
-        map[0][i].type = 1;
-        map[height-1][i].type = 1;
+        map[0][i].type = NORMAL_WALL;
+        map[height-1][i].type = NORMAL_WALL;
     }
+
+    // Initialize snake
+    initSnake(height/2, width/2, DIR_LEFT, 3);
+
+    // Default setting(item & mission)
+    initGrowth(10, 3, 30);
+    initPoison(10, 3, 30);
+    initGate(10, 2, 30);
+    initGateOpen(0, 0);
+    initMission(-1, -1, -1, -1);
+
+    elapse = 0;
+    gate_open = false;
 }
 
 // Generate additional wall
@@ -57,7 +60,12 @@ void SnakeGame::initSnake(int r, int c, int d, int l){
     snake.dir = d;
     snake.len = l;
 
-    map[snake.row][snake.col].type = 3;
+    snake.max_length = snake.len;
+    snake.get_growth = 0;
+    snake.get_poison = 0;
+    snake.get_gate = 0;
+
+    map[snake.row][snake.col].type = SNAKE_HEAD;
 }
 
 // Initialize growth item
@@ -81,20 +89,23 @@ void SnakeGame::initGate(int p, int m, int d){
     gate.dur = d;
 }
 
+// Initialize gate open condition
+void SnakeGame::initGateOpen(int e, int l){
+    gate_open_elapse = e;
+    gate_open_length = l;
+}
+
 // Initialize mission
 void SnakeGame::initMission(int l, int g, int p, int gate){
     if(l < 0) l = rand() % 5 + 4;
     if(g < 0) g = rand() % 5 + 1;
     if(p < 0) p = rand() % 5 + 1;
     if(gate < 0) gate = rand() % 5 + 1;
-    mission.mission_length = l;
-    mission.mission_growth = g;
-    mission.mission_poison = p;
-    mission.mission_gate = gate;
-    mission.max_length = 0;
-    mission.get_growth = 0;
-    mission.get_poison = 0;
-    mission.get_gate = 0;
+
+    mission.length = l;
+    mission.growth = g;
+    mission.poison = p;
+    mission.gate = gate;
 }
 
 // Proceed a tick
@@ -105,16 +116,20 @@ bool SnakeGame::step(){
         for(int c=0; c<height; c++){
             // Reduce MapElement duration
             if(map[r][c].duration > 0 && --map[r][c].duration == 0)
-                map[r][c].type = map[r][c].type == 7 ? 1 : 0;
+                map[r][c].type = map[r][c].type == GATE ? NORMAL_WALL : EMPTY;
             // Change snake head to body
-            if(map[r][c].type == 3){
-                map[r][c].type = 4;
+            if(map[r][c].type == SNAKE_HEAD){
+                map[r][c].type = SNAKE_BODY;
                 map[r][c].duration = snake.len-1;
             }
         }
     // Draw new head
-    map[snake.row][snake.col].type = 3;
+    map[snake.row][snake.col].type = SNAKE_HEAD;
+
     generateItem();
+    elapse++;
+    if(elapse >= gate_open_elapse && snake.len >= gate_open_length)
+        gate_open = true;
     return true;
 }
 
@@ -124,16 +139,16 @@ bool SnakeGame::setNextHead(){
     snake.n_r = snake.row;
     snake.n_c = snake.col;
     switch(snake.dir){
-    case 0:
+    case DIR_UP:
         snake.n_r--;
         break;
-    case 1:
+    case DIR_LEFT:
         snake.n_c--;
         break;
-    case 2:
+    case DIR_DOWN:
         snake.n_r++;
         break;
-    case 3:
+    case DIR_RIGHT:
         snake.n_c++;
         break;
     }
@@ -141,9 +156,9 @@ bool SnakeGame::setNextHead(){
     // Check wall, body and end of map
     if(snake.n_r < 0 || snake.n_r >= height ||
        snake.n_c < 0 || snake.n_c >= width ||
-       map[snake.n_r][snake.n_c].type == 1 ||
-       map[snake.n_r][snake.n_c].type == 2 ||
-       (map[snake.n_r][snake.n_c].type == 4 && 
+       map[snake.n_r][snake.n_c].type == NORMAL_WALL ||
+       map[snake.n_r][snake.n_c].type == IMMUNE_WALL ||
+       (map[snake.n_r][snake.n_c].type == SNAKE_BODY && 
         map[snake.n_r][snake.n_c].duration > 1))
         return false;
     return true;
@@ -156,19 +171,19 @@ bool SnakeGame::enterGate(){
     snake.col = map[snake.n_r][snake.n_c].oppo_col;
 
     // Check original direction
-    if(setNextHead() && map[snake.n_r][snake.n_c].type != 7)
+    if(setNextHead() && map[snake.n_r][snake.n_c].type != GATE)
         return true;
     // Check clockwise direction(right side)
     snake.dir = (tmp_dir + 3 < 4) ? tmp_dir + 3 : tmp_dir -1;
-    if(setNextHead() && map[snake.n_r][snake.n_c].type != 7)
+    if(setNextHead() && map[snake.n_r][snake.n_c].type != GATE)
         return true;
     // Check counterclockwise direction(left side)
     snake.dir = (tmp_dir + 1 < 4) ? tmp_dir + 1 : tmp_dir -3;
-    if(setNextHead() && map[snake.n_r][snake.n_c].type != 7)
+    if(setNextHead() && map[snake.n_r][snake.n_c].type != GATE)
         return true;
     // Check opposite direction(back side)
     snake.dir = (tmp_dir + 2 < 4) ? tmp_dir + 2 : tmp_dir -2;
-    if(setNextHead() && map[snake.n_r][snake.n_c].type != 7)
+    if(setNextHead() && map[snake.n_r][snake.n_c].type != GATE)
         return true;
     return false;
 }
@@ -179,7 +194,7 @@ bool SnakeGame::moveSnake(){
     if(!setNextHead()) return false;
 
     // Pass through a gate
-    if(map[snake.n_r][snake.n_c].type == 7){
+    if(map[snake.n_r][snake.n_c].type == GATE){
         // Extend gate duration
         if(map[snake.n_r][snake.n_c].duration < snake.len){
             map[snake.n_r][snake.n_c].duration = snake.len;
@@ -187,13 +202,22 @@ bool SnakeGame::moveSnake(){
                [map[snake.n_r][snake.n_c].oppo_col].duration = snake.len;
         }
         if(!enterGate()) return false;
+        snake.get_gate++;
     }
 
     // Get growth item
-    if(map[snake.n_r][snake.n_c].type == 5){ resizeSnake(1); }
+    if(map[snake.n_r][snake.n_c].type == GROWTH){
+        resizeSnake(1);
+        snake.get_growth++;
+        if(snake.len > snake.max_length) snake.max_length = snake.len;
+    }
 
     // Get poison item
-    if(map[snake.n_r][snake.n_c].type == 6){ resizeSnake(-1); }
+    if(map[snake.n_r][snake.n_c].type == POISON){
+        resizeSnake(-1);
+        snake.get_poison++;
+        if(snake.len < 3) return false;
+    }
 
     snake.row = snake.n_r;
     snake.col = snake.n_c;
@@ -204,10 +228,10 @@ bool SnakeGame::moveSnake(){
 void SnakeGame::resizeSnake(int a){
     for(int r=0; r<height; r++)
         for(int c=0; c<width; c++){
-            if(map[r][c].type == 4){
+            if(map[r][c].type == SNAKE_BODY){
                 map[r][c].duration += a;
                 if(map[r][c].duration <= 0)
-                    map[r][c].type = 0;
+                    map[r][c].type = EMPTY;
             }
         }
     snake.len += a;
@@ -222,15 +246,15 @@ void SnakeGame::generateItem(){
     for(int r=0; r<height; r++)
         for(int c=0; c<width; c++){
             switch(map[r][c].type){
-            case 0:
+            case EMPTY:
                 empty_cnt++;
                 break;
-            case 1:
+            case NORMAL_WALL:
                 wall_cnt++;
                 break;
-            case 5:
-            case 6:
-            case 7:
+            case GROWTH:
+            case POISON:
+            case GATE:
                 item_cnt[map[r][c].type-5]++;
             }
         }
@@ -241,8 +265,8 @@ void SnakeGame::generateItem(){
         int n = 0;
         for(int r=0; r<height; r++)
             for(int c=0; c<width; c++)
-                if(map[r][c].type == 0 && n++ == index){
-                    map[r][c].type = 5;
+                if(map[r][c].type == EMPTY && n++ == index){
+                    map[r][c].type = GROWTH;
                     map[r][c].duration = growth.dur;
                 }
     }
@@ -253,14 +277,14 @@ void SnakeGame::generateItem(){
         int n = 0;
         for(int r=0; r<height; r++)
             for(int c=0; c<width; c++)
-                if(map[r][c].type == 0 && n++ == index){
-                    map[r][c].type = 6;
+                if(map[r][c].type == EMPTY && n++ == index){
+                    map[r][c].type = POISON;
                     map[r][c].duration = poison.dur;
                 }
     }
 
     // Generate gate
-    if(item_cnt[2] < gate.max && rand()%100 <= gate.pro){
+    if(gate_open && item_cnt[2] < gate.max && rand()%100 <= gate.pro){
         int index1, index2;
         int r1, c1, r2, c2;
 
@@ -271,14 +295,14 @@ void SnakeGame::generateItem(){
         int n = 0;
         for(int r=0; r<height; r++)
             for(int c=0; c<width; c++){
-                if(map[r][c].type == 1){
+                if(map[r][c].type == NORMAL_WALL){
                     if(n == index1){
-                        map[r][c].type = 7;
+                        map[r][c].type = GATE;
                         map[r][c].duration = gate.dur;
                         r1 = r;
                         c1 = c;
                     }else if(n == index2){
-                        map[r][c].type = 7;
+                        map[r][c].type = GATE;
                         map[r][c].duration = gate.dur;
                         r2 = r;
                         c2 = c;

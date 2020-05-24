@@ -5,13 +5,15 @@ using namespace std;
 int main(){
     UserInterface mainUI;
 
-    SnakeGame stage[3];
-    double ticks[] = {0.5, 0.5, 0.3};
+    SnakeGame stage0(30, 30);
+    stage0.buildWall(10, 10, 1);
+    stage0.buildWall(20, 10, 1);
+    stage0.buildWall(10, 20, 1);
+    stage0.buildWall(20, 20, 1);
 
-    // stage_0 setting
+    double t = 0.5;
 
-    // stage_1 setting
-    mainUI.play(stage[0], ticks[0]);
+    mainUI.play(stage0, t);
 
     return 0;
 }

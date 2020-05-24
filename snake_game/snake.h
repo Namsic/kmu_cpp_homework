@@ -1,53 +1,52 @@
 #include<ncurses.h>
 
+// Define constants
+const int DIR_UP = 0;
+const int DIR_LEFT = 1;
+const int DIR_DOWN = 2;
+const int DIR_RIGHT = 3;
+
+const int EMPTY = 0;
+const int NORMAL_WALL = 1;
+const int IMMUNE_WALL = 2;
+const int SNAKE_HEAD = 3;
+const int SNAKE_BODY = 4;
+const int GROWTH = 5;
+const int POISON = 6;
+const int GATE = 7;
+
 // ==========* SnakeGame Class *========== //
 class SnakeGame{
 public:
     SnakeGame();
+    SnakeGame(int width, int height);
     friend class UserInterface;
 
     // Initialize game setting
-    void initMap(int height, int width);
     void buildWall(int row, int col, int wall_type);
     void initSnake(int row, int col, int dir, int len);
     void initGrowth(int probability, int maximum, int duration);
     void initPoison(int probability, int maximum, int duration);
     void initGate(int probability, int maximum, int duration);
+    void initGateOpen(int elapse, int length);
     void initMission(int max_length, int growth, int poison, int gate);
 
 private:
     struct MapElement{
         int type;
-        /* Type_Code
-         * 0: empty
-         * 1: normal wall
-         * 2: immune wall
-         * 3: snake_head
-         * 4: snake_body
-         * 5: growth item
-         * 6: poison item
-         * 7: gate
-         */
         int duration;
-        /* Duration Code
-         * -1: infinite
-         *  0: empty
-         * +n: disappear affter n ticks
-         */
         // Position of opposite gate
         int oppo_row, oppo_col;
     };
     struct Snake{
         int row, col;  // Position of snake_head
         int n_r, n_c;  // Next_position of snake_head
-        int dir;
-        /* Direction_Code
-         * 0: Up
-         * 1: Left
-         * 2: Down
-         * 3: Right
-         */
-        int len;  // Length of snake_body + 1(head)
+        int dir;  // Direction of snake_head
+        int len;  // Length of snake(head + body)
+        int max_length;
+        int get_growth;
+        int get_poison;
+        int get_gate;
     };
     struct Item{
         int pro;  // Generation probability(%)
@@ -55,20 +54,25 @@ private:
         int dur;  // Duration(tick)
     };
     struct Mission{
-        mission_length;
-        mission_growth;
-        mission_poison;
-        mission_gate;
-        max_length;
-        get_growth;
-        get_poison;
-        get_gate;
+        int length;
+        int growth;
+        int poison;
+        int gate;
     };
-    int height, width;
+
+    const int height, width;
     MapElement **map;
     Snake snake;
     Item growth, poison, gate;
+
+    // mission & score
     Mission mission;
+    int elapse;
+    bool gate_open;
+    int gate_open_elapse, gate_open_length;
+
+
+    void initGame(int height, int width);
 
     // Control snake
     bool setNextHead();
@@ -84,6 +88,10 @@ private:
 // ========== UserInterface Class ========== //
 class UserInterface{
 private:
+    // Define constants
+    const int THEME = 5;
+    const int VIEW_MARGIN = 8;
+
     double tick_spd;
     WINDOW *boardWindow;
     WINDOW *scoreWindow;
