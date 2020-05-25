@@ -3,9 +3,10 @@
 #include "MyComplex.h"
 void testSimpleCase();
 void testDataFromFile();
-void main(void){
+int main(void){
   testSimpleCase();
   testDataFromFile();
+  return 0;
 }
 
 void testSimpleCase(){
@@ -48,8 +49,8 @@ void testSimpleCase(){
     c9) << endl;
   c7 = c8 = c9;
   cout << (c8 != c9) << " " << (c8 == c9) << endl;
-  cout << (c8 > c9) << " " << (c8 >= c9) << " " << (c8 < c9) << " " << (c8 <=
-    c9) << endl;
+  cout << (c8 > c9) << " " << (c8 >= c9) << " " << (c8 < c9) << " " <<
+    (c8 <= c9)<< endl;
 
   c7 = -myComplex(2, 3);
   c8 = (++c7) * 2;

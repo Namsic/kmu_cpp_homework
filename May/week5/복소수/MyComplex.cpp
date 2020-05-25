@@ -25,7 +25,66 @@ myComplex myComplex::operator +(const myComplex& number) const{
   return myComplex (newReal, newImag);
 }
 myComplex myComplex::operator +(int value) const{
-  return myComplex(value) + (*this);
+  return (*this) + myComplex(value);
+}
+myComplex operator +(int value, const myComplex& number){
+  return myComplex(value) + number;
+}
+myComplex myComplex::operator -(const myComplex& number) const{
+  int newReal = realPart - number.realPart;
+  int newImag = imaginaryPart - number.imaginaryPart;
+  return myComplex (newReal, newImag);
+}
+myComplex myComplex::operator -(int value) const{
+  return (*this) - myComplex(value);
+}
+myComplex operator -(int value, const myComplex& number){
+  return myComplex(value) - number;
+}
+myComplex myComplex::operator *(const myComplex& number) const{
+  int newReal = realPart*number.realPart - imaginaryPart*number.imaginaryPart;
+  int newImag = realPart*number.imaginaryPart + imaginaryPart*number.realPart;
+  return myComplex (newReal, newImag);
+}
+myComplex myComplex::operator *(int value) const{
+  return (*this) * myComplex(value);
+}
+myComplex operator *(int value, const myComplex& number){
+  return myComplex(value) * number;
+}
+
+myComplex myComplex::operator +=(const myComplex& number){
+  (*this) = (*this) + number;
+  return *this;
+}
+myComplex myComplex::operator +=(int value){
+  (*this) = (*this) + value;
+  return *this;
+}
+myComplex operator +=(int value, myComplex& number){
+  return value + number;
+}
+myComplex myComplex::operator -=(const myComplex& number){
+  (*this) = (*this) - number;
+  return *this;
+}
+myComplex myComplex::operator -=(int value){
+  (*this) = (*this) - value;
+  return *this;
+}
+myComplex operator -=(int value, myComplex& number){
+  return value - number;
+}
+myComplex myComplex::operator *=(const myComplex& number){
+  (*this) = (*this) * number;
+  return *this;
+}
+myComplex myComplex::operator *=(int value){
+  (*this) = (*this) * value;
+  return *this;
+}
+myComplex operator *=(int value, myComplex& number){
+  return value * number;
 }
 
 myComplex& myComplex::operator =(const myComplex& number){
@@ -44,12 +103,46 @@ bool myComplex::operator ==(const myComplex& number) const{
   return (realPart == number.realPart) &&
     (imaginaryPart == number.imaginaryPart);
 }
+bool myComplex::operator !=(const myComplex& number) const{
+  return (realPart != number.realPart) ||
+    (imaginaryPart != number.imaginaryPart);
+}
 bool myComplex::operator >(const myComplex& number) const{
   return norm() > number.norm();
+}
+bool myComplex::operator >=(const myComplex& number) const{
+  return norm() >= number.norm();
+}
+bool myComplex::operator <(const myComplex& number) const{
+  return norm() < number.norm();
+}
+bool myComplex::operator <=(const myComplex& number) const{
+  return norm() <= number.norm();
 }
 
 myComplex myComplex::operator -(){
   return myComplex(-realPart, -imaginaryPart);
+}
+myComplex myComplex::operator ~(){
+  return myComplex(realPart, -imaginaryPart);
+}
+myComplex& myComplex::operator ++(){
+  realPart++;
+  return *this;
+}
+myComplex myComplex::operator ++(int){
+  myComplex tmp(*this);
+  ++(*this);
+  return tmp;
+}
+myComplex& myComplex::operator --(){
+  realPart--;
+  return *this;
+}
+myComplex myComplex::operator --(int){
+  myComplex tmp(*this);
+  --(*this);
+  return tmp;
 }
 
 int myComplex::norm() const{
@@ -57,7 +150,8 @@ int myComplex::norm() const{
 }
 
 ostream &operator <<(ostream &outStream, const myComplex& number){
-  outStream << "(" << number.realPart << "," << number.imaginaryPart << ")";
+  outStream << "(" << number.realPart << "," <<
+    number.imaginaryPart << ")";
   return outStream;
 }
 
