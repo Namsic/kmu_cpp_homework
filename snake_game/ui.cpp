@@ -23,9 +23,9 @@ UserInterface::UserInterface(){
     init_pair(8, COLOR_BLACK, COLOR_MAGENTA);  // gate
 
     boardWindow = newwin(21, 21*2+1, 1, 2);
-    scoreWindow   = newwin(6, 17,  1, 21*2+6);
-    missionWindow = newwin(5, 17,  8, 21*2+6);
-    gateWindow    = newwin(5, 17, 14, 21*2+6);
+    scoreWindow   = newwin(7, 17,  1, 21*2+6);
+    missionWindow = newwin(5, 17,  9, 21*2+6);
+    gateWindow    = newwin(5, 17, 15, 21*2+6);
 
     bkgd(COLOR_PAIR(THEME));
     wbkgd(boardWindow, COLOR_PAIR(THEME));
@@ -46,13 +46,13 @@ UserInterface::~UserInterface(){
 }
 
 
-bool UserInterface::play(SnakeGame game, double tick){
-    tick_spd = tick * CLOCKS_PER_SEC;
+int UserInterface::play(SnakeGame game, double tick){
+    game.cleanMap();
+    game.tick_speed = tick;
     timeout(0);
 
     bool mission[4] = {false, false, false, false};
 
-    erase();
     refresh();
     int view_r = 0, view_c = 0;
     while(true){
@@ -79,10 +79,16 @@ bool UserInterface::play(SnakeGame game, double tick){
         wmove(boardWindow, 0, 0);
         for(int r=0; r<21; r++){
             for(int c=0; c<21; c++){
-                wattron(boardWindow, COLOR_PAIR(
-                    game.map[view_r + r][view_c + c].type+1
-                ));
-                wprintw(boardWindow, "  ");
+                if(game.map[view_r + r][view_c + c].type == 8){
+                    wattron(boardWindow, COLOR_PAIR(6));
+                    wprintw(boardWindow, "<>");
+                }
+                else{
+                    wattron(boardWindow, COLOR_PAIR(
+                        game.map[view_r + r][view_c + c].type+1
+                    ));
+                    wprintw(boardWindow, "  ");
+                }
             }
             wprintw(boardWindow, "\n");
         }
@@ -100,6 +106,8 @@ bool UserInterface::play(SnakeGame game, double tick){
         wprintw(scoreWindow, to_string(game.snake.get_poison).c_str());
         wprintw(scoreWindow, "\n *: ");
         wprintw(scoreWindow, to_string(game.snake.get_gate).c_str());
+        wprintw(scoreWindow, "\n tick speed: ");
+        wprintw(scoreWindow, to_string(game.tick_speed).c_str());
         wrefresh(scoreWindow);
 
         // Renew mission_window
@@ -127,7 +135,7 @@ bool UserInterface::play(SnakeGame game, double tick){
 
         // Input keboard
         int time_check = clock();
-        while(clock() - time_check < tick_spd)
+        while(clock() - time_check < game.tick_speed * CLOCKS_PER_SEC)
             switch(getch()){
             case KEY_UP:
                 game.snake.dir = 0;
@@ -141,6 +149,11 @@ bool UserInterface::play(SnakeGame game, double tick){
             case KEY_RIGHT:
                 game.snake.dir = 3;
                 break;
+            case 'r':
+                return 0;
+                break;
+            case 'q':
+                return -1;
             }
 
         // Fail
@@ -155,11 +168,19 @@ bool UserInterface::play(SnakeGame game, double tick){
             wmove(boardWindow, 11, 12);
             wprintw(boardWindow, "                  ");
             wmove(boardWindow, 12, 12);
+            wprintw(boardWindow, "Press 'r' to retry");
+            wmove(boardWindow, 13, 12);
             wprintw(boardWindow, "Press 'q' to close");
             wrefresh(boardWindow);
             timeout(-1);
-            while(getch()!='q');
-            return false;
+            while(true){
+                int c = getch();
+                if(c == 'r'){
+                    return 0;
+                }
+                else if(c == 'q')
+                    return -1;
+            }
         }
         // Success
         if(mission[0] && mission[1] && mission[2] && mission[3]){
@@ -177,7 +198,7 @@ bool UserInterface::play(SnakeGame game, double tick){
             wrefresh(boardWindow);
             timeout(-1);
             while(getch()!='c');
-            return true;
+            return 1;
         }
 
         // Renew mission status
@@ -186,6 +207,5 @@ bool UserInterface::play(SnakeGame game, double tick){
         if(game.snake.get_poison >= game.mission.poison) mission[2] = true;
         if(game.snake.get_gate >= game.mission.gate) mission[3] = true;
     }
-    return true;
 }
 

@@ -14,6 +14,7 @@ const int SNAKE_BODY = 4;
 const int GROWTH = 5;
 const int POISON = 6;
 const int GATE = 7;
+const int SPD_DOWN = 8;
 
 // ==========* SnakeGame Class *========== //
 class SnakeGame{
@@ -23,10 +24,12 @@ public:
     friend class UserInterface;
 
     // Initialize game setting
+    void initMap(int height, int width);
     void buildWall(int row, int col, int wall_type);
     void initSnake(int row, int col, int dir, int len);
     void initGrowth(int probability, int maximum, int duration);
     void initPoison(int probability, int maximum, int duration);
+    void initSpeedDown(int probability, int maximum, int duration);
     void initGate(int probability, int maximum, int duration);
     void initGateOpen(int elapse, int length);
     void initMission(int max_length, int growth, int poison, int gate);
@@ -60,19 +63,20 @@ private:
         int gate;
     };
 
-    const int height, width;
+    int height, width;
     MapElement **map;
     Snake snake;
-    Item growth, poison, gate;
+    Item growth, poison, gate, spd_down;
+
+    void defaultSetting();
 
     // mission & score
     Mission mission;
     int elapse;
+    double tick_speed;
     bool gate_open;
     int gate_open_elapse, gate_open_length;
 
-
-    void initGame(int height, int width);
 
     // Control snake
     bool setNextHead();
@@ -81,7 +85,9 @@ private:
     void resizeSnake(int amount);
 
     bool step();
+    void setTickSpeed(double amount);
     void generateItem();
+    void cleanMap();
 };
 
 
@@ -103,5 +109,5 @@ public:
     UserInterface();
     ~UserInterface();
 
-    bool play(SnakeGame, double);
+    int play(SnakeGame, double);
 };

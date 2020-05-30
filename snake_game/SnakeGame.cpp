@@ -3,17 +3,36 @@
 #include"snake.h"
 
 // Constructor
-SnakeGame::SnakeGame(): height(21), width(21){
-    initGame(height, width);
-}
-SnakeGame::SnakeGame(int h, int w): height(h), width(w){
-    initGame(height, width);
-}
-
-// Initialize basic setting
-void SnakeGame::initGame(int h, int w){
+SnakeGame::SnakeGame(){
     srand((unsigned int)time(NULL));
+    initMap(21, 21);
 
+    defaultSetting();
+}
+SnakeGame::SnakeGame(int h, int w){
+    srand((unsigned int)time(NULL));
+    initMap(h, w);
+
+    defaultSetting();
+}
+
+// Default setting
+void SnakeGame::defaultSetting(){
+    initGrowth(10, 3, 30);
+    initPoison(10, 3, 30);
+    initGate(10, 2, 30);
+    initSpeedDown(5, 1, 30);
+    initGateOpen(0, 0);
+    initMission(-1, -1, -1, -1);
+
+    elapse = 0;
+    gate_open = false;
+}
+
+// Initialize basic map
+void SnakeGame::initMap(int h, int w){
+    height = h;
+    width = w;
     // Generate empty map
     map = new MapElement*[height];
     for(int i=0; i<height; i++)
@@ -36,16 +55,6 @@ void SnakeGame::initGame(int h, int w){
 
     // Initialize snake
     initSnake(height/2, width/2, DIR_LEFT, 3);
-
-    // Default setting(item & mission)
-    initGrowth(10, 3, 30);
-    initPoison(10, 3, 30);
-    initGate(10, 2, 30);
-    initGateOpen(0, 0);
-    initMission(-1, -1, -1, -1);
-
-    elapse = 0;
-    gate_open = false;
 }
 
 // Generate additional wall
@@ -89,6 +98,13 @@ void SnakeGame::initGate(int p, int m, int d){
     gate.dur = d;
 }
 
+// Initialize speed down item
+void SnakeGame::initSpeedDown(int p, int m, int d){
+    spd_down.pro = p;
+    spd_down.max = m;
+    spd_down.dur = d;
+}
+
 // Initialize gate open condition
 void SnakeGame::initGateOpen(int e, int l){
     gate_open_elapse = e;
@@ -128,11 +144,18 @@ bool SnakeGame::step(){
 
     generateItem();
     elapse++;
+    // Speed up
+    if(elapse % 50 == 0) setTickSpeed(-0.05);
     if(elapse >= gate_open_elapse && snake.len >= gate_open_length)
         gate_open = true;
     return true;
 }
 
+// Change tick_speed
+void SnakeGame::setTickSpeed(double amount){
+    if(tick_speed + amount > 0.05 && tick_speed + amount < 0.5)
+        tick_speed += amount;
+}
 
 // Check next space & set next_head
 bool SnakeGame::setNextHead(){
@@ -219,6 +242,11 @@ bool SnakeGame::moveSnake(){
         if(snake.len < 3) return false;
     }
 
+    // Get speed_down item
+    if(map[snake.n_r][snake.n_c].type == SPD_DOWN){
+        setTickSpeed(0.05);
+    }
+
     snake.row = snake.n_r;
     snake.col = snake.n_c;
     return true;
@@ -239,7 +267,7 @@ void SnakeGame::resizeSnake(int a){
 
 // Generate new item & gate
 void SnakeGame::generateItem(){
-    int item_cnt[] = {0, 0, 0};  // {growth, poison, gate}
+    int item_cnt[] = {0, 0, 0, 0};  // {growth, poison, gate, spd_down}
     int empty_cnt = 0, wall_cnt = 0;
 
     // Count each MapElement_type
@@ -255,6 +283,7 @@ void SnakeGame::generateItem(){
             case GROWTH:
             case POISON:
             case GATE:
+            case SPD_DOWN:
                 item_cnt[map[r][c].type-5]++;
             }
         }
@@ -315,8 +344,24 @@ void SnakeGame::generateItem(){
         map[r2][c2].oppo_row = r1;
         map[r2][c2].oppo_col = c1;
     }
+
+    // Generate speed down item
+    if(item_cnt[3] < spd_down.max && rand()%100 <= spd_down.pro){
+        int index = rand()%empty_cnt;
+        int n = 0;
+        for(int r=0; r<height; r++)
+            for(int c=0; c<width; c++)
+                if(map[r][c].type == EMPTY && n++ == index){
+                    map[r][c].type = SPD_DOWN;
+                    map[r][c].duration = spd_down.dur;
+                }
+    }
 }
 
-
-
-
+// Generate new item & gate
+void SnakeGame::cleanMap(){
+        for(int r=0; r<height; r++)
+            for(int c=0; c<width; c++)
+                if(map[r][c].type > 2)
+                    map[r][c].type = map[r][c].type == GATE ? NORMAL_WALL : EMPTY;
+}
