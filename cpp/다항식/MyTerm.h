@@ -6,8 +6,7 @@ using namespace std;
 
 class myPolynomial;
 
-class myTerm
-{
+class myTerm{
 public:
   myTerm(int c = 0, unsigned e = 0);
 

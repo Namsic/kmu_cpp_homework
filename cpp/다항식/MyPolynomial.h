@@ -39,8 +39,10 @@ public:
   static const myPolynomial X; // P(x) = x
 
 private:
-  int degree; // maximum expnent
-/********************* add your code here ********************************/
+  myTerm terms[50];
+
+  void pullTerms();
+  void insertTerm(int c, unsigned e);
 };
 
 #endif _MYPOLYNOMIAL_H_
