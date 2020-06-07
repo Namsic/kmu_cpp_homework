@@ -112,7 +112,7 @@ long myPolynomial::operator() (int x) const{
 int myPolynomial::getDegree() const{
   //if((*this) == myPolynomial::ZERO)
   //  return -1;
-  //return terms[0].getExp();
+  return terms[0].getExp();
 }
 unsigned myPolynomial::getNumTerms() const{
   int i = 0;
