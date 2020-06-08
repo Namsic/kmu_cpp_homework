@@ -46,9 +46,8 @@ UserInterface::~UserInterface(){
 }
 
 
-int UserInterface::play(SnakeGame game, double tick){
+int UserInterface::play(SnakeGame game){
     game.cleanMap();
-    game.tick_speed = tick;
     timeout(0);
 
     bool mission[4] = {false, false, false, false};
@@ -79,16 +78,10 @@ int UserInterface::play(SnakeGame game, double tick){
         wmove(boardWindow, 0, 0);
         for(int r=0; r<21; r++){
             for(int c=0; c<21; c++){
-                if(game.map[view_r + r][view_c + c].type == 8){
-                    wattron(boardWindow, COLOR_PAIR(6));
-                    wprintw(boardWindow, "<>");
-                }
-                else{
-                    wattron(boardWindow, COLOR_PAIR(
-                        game.map[view_r + r][view_c + c].type+1
-                    ));
-                    wprintw(boardWindow, "  ");
-                }
+                wattron(boardWindow, COLOR_PAIR(
+                    game.map[view_r + r][view_c + c].type+1
+                ));
+                wprintw(boardWindow, "  ");
             }
             wprintw(boardWindow, "\n");
         }
