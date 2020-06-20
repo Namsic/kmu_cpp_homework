@@ -142,7 +142,7 @@ int UserInterface::play(SnakeGame game){
         wmove(gateWindow, 0, 0);
         wprintw(gateWindow, " *    Gate     *");
         wprintw(gateWindow, game.gate_open ?
-            "\n - Gate opened -\n *: " : "\n - Gate closed -\n ~: ");
+            "\n - Gate opened -\n >: " : "\n - Gate closed -\n >: ");
         wprintw(gateWindow, to_string(game.gate_open_elapse).c_str());
         wprintw(gateWindow, "\n ~: ");
         wprintw(gateWindow, to_string(game.gate_open_length).c_str());
