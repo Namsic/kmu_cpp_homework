@@ -393,6 +393,8 @@ void SnakeGame::generateItem(){
 void SnakeGame::cleanMap(){
         for(int r=0; r<height; r++)
             for(int c=0; c<width; c++)
-                if(map[r][c].type > 2)
+                if(map[r][c].type > 2){
                     map[r][c].type = map[r][c].type == GATE ? NORMAL_WALL : EMPTY;
+                    map[r][c].duration = 0;
+                }
 }
