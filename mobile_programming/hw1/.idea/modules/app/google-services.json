@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "810595757634",
+    "firebase_url": "https://namjae-mobile-hw.firebaseio.com",
+    "project_id": "namjae-mobile-hw",
+    "storage_bucket": "namjae-mobile-hw.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810595757634:android:11173be9e7246b1661c7db",
+        "android_client_info": {
+          "package_name": "com.example.hw1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "810595757634-4d0ros6l1dl0gdp8uino8ops83rn212u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hw1",
+            "certificate_hash": "745213b7f462914797cd4d66bc277f31fbf4024c"
+          }
+        },
+        {
+          "client_id": "810595757634-21f58kt82i1qvun47ff5eqah6lejaoc6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC826S78xryaM2FZSTK-xnfklbTf4vcizg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810595757634-21f58kt82i1qvun47ff5eqah6lejaoc6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

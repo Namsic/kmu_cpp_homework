@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#446688"
+    >
+
+    <TextView
+        android:id="@+id/tv_tabTitle"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:textSize="30sp"
+        android:text="상품 목록" />
+
+    <ListView
+        android:id="@+id/lv_product"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tv_tabTitle"
+        android:overScrollMode="always" />
+
+    <LinearLayout
+        android:id="@+id/layout_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true" >
+
+        <TextView
+            android:id="@+id/tv_clickedProductName"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:background="#ffbb33"
+            android:visibility="gone" />
+        <Button
+            android:id="@+id/btn_addBag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="장바구니담기"
+            android:visibility="gone"  />
+
+        <Button
+            android:id="@+id/btn_purchase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="구매하기"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</RelativeLayout>
