@@ -32,13 +32,11 @@ contract AutomaticWithdrawal {
         
         // 이용가능 시간이 남은 경우
         if(userMap[_addr].balance >= curCharge) {
-            owner.transfer(curCharge);
             userMap[_addr].balance -= curCharge;
             userMap[_addr].baseTime -= n * term;
         }
         // 지불한 요금을 모두 사용한 경우
         else {
-            owner.transfer(curCharge);
             delete userMap[_addr];
         }
         _;

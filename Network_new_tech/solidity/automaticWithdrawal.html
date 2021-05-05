@@ -1,0 +1,254 @@
+<html>
+<head>
+<script src='node_modules/web3/dist/web3.min.js'></script>
+<script type="text/javascript"> 
+var accounts = null;
+var contractInstance = null;
+var resultbox = null;
+
+window.addEventListener('load', onloadfunc);
+
+async function onloadfunc() {
+  if (window.ethereum) {
+    window.accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+    getContractInstance();
+    registerEventHandlers();
+    document.getElementById("accountSpan").innerHTML = accounts[0];
+  }
+  else if (window.web3) {
+    window.web3 = new Web3(web3.currentProvider);
+  }
+  else {
+    console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+    window.web3 = null
+  }
+}
+
+async function getContractInstance() {
+	var address = "0x898DC882De7B9E4350859c7EadF55A88858F7E81";
+	var abi = [
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "getBalance",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "getTerm",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "payment",
+			"outputs": [],
+			"payable": true,
+			"stateMutability": "payable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "destroy",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "getOwner",
+			"outputs": [
+				{
+					"name": "",
+					"type": "address"
+				}
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "getCharge",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "returnBalance",
+			"outputs": [],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "getCharge",
+			"outputs": [
+				{
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"constant": false,
+			"inputs": [],
+			"name": "useService",
+			"outputs": [
+				{
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"name": "_charge",
+					"type": "uint256"
+				},
+				{
+					"name": "_term",
+					"type": "uint256"
+				}
+			],
+			"payable": false,
+			"stateMutability": "nonpayable",
+			"type": "constructor"
+		}
+	];
+	window.web3 = new Web3(window.ethereum);
+	contractInstance = await new window.web3.eth.Contract(abi, address);
+	let value = await contractInstance.methods.getOwner().call();
+        document.getElementById("ownerSpan").innerHTML = value;
+	value = await contractInstance.methods.getCharge().call();
+        document.getElementById("chargeSpan").innerHTML = value;
+	value = await contractInstance.methods.getTerm().call();
+        document.getElementById("termSpan").innerHTML = value;
+}
+
+
+function registerEventHandlers() {
+  document.getElementById("getBalance").addEventListener('click', getBalance);
+  document.getElementById("payment").addEventListener('click', payment);
+  document.getElementById("useService").addEventListener('click', useService);
+  document.getElementById("returnBalance").addEventListener('click', returnBalance);
+
+  resultbox = document.getElementById("resultbox");
+}
+
+async function getBalance() {
+  if (contractInstance != null) {
+    try {
+	let value = await contractInstance.methods.getBalance().call({from:accounts[0]});
+	alert("Current balance: " + value);
+    } catch (error) {
+        alert("error occured");
+        console.log(error);
+    }
+  }
+}
+
+async function payment() {
+  if (contractInstance != null) {
+    try {
+	let amt = prompt("How much do you want to charge?", 1000000000000);
+	let value = await contractInstance.methods.payment().send({from: accounts[0], value: amt});
+	resultbox.innerHTML = JSON.stringify(value);
+	value = await contractInstance.methods.getBalance().call({from:accounts[0]});
+	alert("Result balance: " + value);
+    } catch (error) {
+        alert("error occured");
+        console.log(error);
+    }
+  }
+}
+
+async function useService() {
+  if (contractInstance != null) {
+    try {
+	let value = await contractInstance.methods.useService().call({from:accounts[0]});
+	if(value)
+	    alert("Service Available");
+	else
+	    alert("Service disabled");
+    } catch (error) {
+        alert("error occured");
+        console.log(error);
+    }
+  }
+}
+
+async function returnBalance() {
+  if (contractInstance != null) {
+    try {
+	let value = await contractInstance.methods.returnBalance().send({from:accounts[0]});
+	resultbox.innerHTML = JSON.stringify(value);
+	alert("The balance has been returned. Thank you for using it.");
+    } catch (error) {
+        alert("error occured");
+        console.log(error);
+    }
+  }
+}
+
+</script> </head>
+<body>
+<h1> Project Name: AutomaticWithdrawal </h1>
+<h4> Team Name: Namjae Kim (20171584) </h4>
+<hr>
+<h4> Current Account: <span id="accountSpan"></span> </h4>
+<hr>
+<h3> * Contract info * </h3>
+<h4> Owner: <span id="ownerSpan"></span> </h4>
+<h4> Charge: <span id="chargeSpan"></span> Wei </h4>
+<h4> Term: <span id="termSpan"></span> s </h4>
+<hr>
+<input type="button" id="getBalance" value="myBalance" style="width:200px;height:70px">
+<input type="button" id="useService" value="Service availability" style="width:200px;height:70px">
+<br> <br>
+<input type="button" id="payment" value="payment" style="width:200px;height:70px">
+<input type="button" id="returnBalance" value="returnBalance" style="width:200px;height:70px">
+<br>
+Result: <span id="resultbox"> </span>
+<hr>
+<a href="https://youtu.be/q5PgqXNZijM"> Test video(Youtube) </a>
+</body>
+</html>
