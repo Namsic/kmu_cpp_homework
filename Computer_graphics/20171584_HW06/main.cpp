@@ -487,7 +487,7 @@ void init_shader_program()
   loc_u_PVM = glGetUniformLocation(program, "u_PVM");
 
   loc_a_position = glGetAttribLocation(program, "a_position");
-  loc_a_color = glGetAttribLocation(program, "a_color");
+  loc_a_normal = glGetAttribLocation(program, "a_normal");
 
   // TODO : get locations
   loc_u_model_matrix = glGetUniformLocation(program, "u_model_matrix");
@@ -534,7 +534,7 @@ void render_object()
   {
     // TODO : set mat_model, mat_normal, mat_PVM 
     mat_model = models[i].get_model_matrix();
-    mat_normal = transpose(inverse(mat_model));
+    mat_normal = transpose(inverse(mat_model * mat_view));
     mat_PVM = mat_proj * mat_view * mat_model;
     // TODO : send data to GPU
     glUniformMatrix4fv(loc_u_PVM, 1, false, glm::value_ptr(mat_PVM));
